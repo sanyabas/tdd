@@ -8,26 +8,29 @@ namespace TagsCloudVisualisation
 {
     public class CircularCloudLayouter
     {
-        private readonly Point center;
+        private readonly PointF center;
         private double radius;
-        private List<Rectangle> cloud;
-        public CircularCloudLayouter(Point center)
+        private List<RectangleF> cloud;
+        public CircularCloudLayouter(PointF center)
         {
             this.center = center;
-            cloud=new List<Rectangle>();
+            cloud=new List<RectangleF>();
             radius = 1;
         }
 
-        public Rectangle PutNextRectangle(Size rectangleSize)
+        public RectangleF PutNextRectangle(SizeF rectangleSize)
         {
             if (cloud.Count == 0)
             {
-                cloud.Add(new Rectangle(new Point(1,0), rectangleSize));
+                radius = rectangleSize.Width/2.0;
+                var x0 = (float) (center.X - rectangleSize.Width/2.0);
+                var y0 = (float) (center.Y - rectangleSize.Height/2.0);
+                cloud.Add(new RectangleF(new PointF(x0,y0), rectangleSize));
                 return cloud[cloud.Count - 1];
             }
             else
             {
-                cloud.Add(new Rectangle(new Point(1,1), rectangleSize));
+                cloud.Add(new RectangleF(new PointF(1,1), rectangleSize));
                 return cloud[cloud.Count - 1];
             }
             
@@ -46,17 +49,18 @@ namespace TagsCloudVisualisation
         }
 
         [Test]
-        public void PlaceAnywhere_ZeroRectangle()
+        public void PlaceInCenter_ZeroRectangle()
         {
             var rectangle=layouter.PutNextRectangle(new Size(0, 0));
-            rectangle.Location.Should().NotBe(new Point(0, 0));
+            rectangle.Location.Should().Be(new PointF(0, 0));
         }
 
         [Test]
-        public void PlaceAnywhere_OneRectangle()
+        public void PlaceInCenter_OneRectangle()
         {
             var rectangle = layouter.PutNextRectangle(new Size(1, 1));
-            rectangle.Location.Should().NotBe(new Point(0, 0));
+            rectangle.Should().Match(rect => ((RectangleF)rect).IntersectsWith(new RectangleF(0, 0, 0, 0)));
+
         }
 
         [Test]
@@ -64,7 +68,16 @@ namespace TagsCloudVisualisation
         {
             var first = layouter.PutNextRectangle(new Size(1, 1));
             var second = layouter.PutNextRectangle(new Size(1, 1));
-            first.Should().Match(rect => !((Rectangle) rect).IntersectsWith(second));
+            first.Should().Match(rect => !((RectangleF) rect).IntersectsWith(second));
         }
+
+        [Test]
+        public void PlaceWithoudIntersection_TwoDifferentRectangles()
+        {
+            var first = layouter.PutNextRectangle(new Size(2, 5));
+            var second = layouter.PutNextRectangle(new Size(3, 4));
+            Assert.IsTrue(!first.IntersectsWith(second));
+        }
+        
     }
 }
