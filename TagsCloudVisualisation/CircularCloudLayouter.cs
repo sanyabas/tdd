@@ -35,8 +35,8 @@ namespace TagsCloudVisualisation
             }
             else if (rectangles.Count == 1)
             {
-                rectangles.Add(new RectangleF(new PointF(radius, previousPoint.Y), rectangleSize));
-                previousRadiusPoint = new PointF(radius, previousPoint.Y);
+                rectangles.Add(new RectangleF(new PointF(center.X+radius, previousPoint.Y), rectangleSize));
+                previousRadiusPoint = new PointF(center.X+radius, previousPoint.Y);
                 return rectangles[rectangles.Count - 1];
             }
             radius++;
@@ -45,16 +45,15 @@ namespace TagsCloudVisualisation
             //var y = (float)(-temp.Y * Math.Cos(Math.PI / 4));
             //var x = (float) (previousPoint.X*Math.Cos(angle) - previousPoint.Y*Math.Sin(angle));
             //var y = (float) (previousPoint.X*Math.Sin(angle) + previousPoint.Y*Math.Cos(angle));
-
-            var x = (float)(previousRadiusPoint.X * Math.Cos(angle) - previousRadiusPoint.Y * Math.Sin(angle));
-            var y = (float)(previousRadiusPoint.X * Math.Sin(angle) + previousRadiusPoint.Y * Math.Cos(angle));
-
+            var tempPrevious = new PointF(previousRadiusPoint.X-center.X,previousPoint.Y-center.Y);
+            var x = (float)(tempPrevious.X * Math.Cos(angle) - tempPrevious.Y * Math.Sin(angle));
+            var y = (float)(tempPrevious.X * Math.Sin(angle) + tempPrevious.Y * Math.Cos(angle));
             //y = y - Math.Abs(rectangles.OrderBy(rect => rect.Top).First().Y);
             //rectangles.Add(new RectangleF(new PointF(x, y - rectangleSize.Height - rectangles[0].Height), rectangleSize));
             //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-Math.Abs(previousPoint.Y-rectangleSize.Height)), rectangleSize));
             //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-rectangleSize.Height), rectangleSize));
             rectangles.Add(new RectangleF(new PointF(2 * x - previousPoint.X, (y < 0 ? (previousPoint.Y - rectangleSize.Height) : y)), rectangleSize));
-            previousRadiusPoint = new PointF((float)(x + Math.Sign(x) * Math.Sqrt(2) / 2), (float)(y + Math.Sign(y) * Math.Sqrt(2) / 2));
+            previousRadiusPoint = new PointF((float)(x + Math.Sign(x) * Math.Sqrt(2) / 2+center.X), (float)(y + Math.Sign(y) * Math.Sqrt(2) / 2+center.Y));
             return rectangles[rectangles.Count - 1];
         }
 
