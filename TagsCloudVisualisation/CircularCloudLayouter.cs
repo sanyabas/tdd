@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using NUnit.Framework;
 
 namespace TagsCloudVisualisation
 {
@@ -10,7 +13,7 @@ namespace TagsCloudVisualisation
         private readonly PointF center;
         private float radius;
         private List<RectangleF> rectangles;
-        private float angle=(float) (-Math.PI/4);
+        private float angle = (float)(-Math.PI / 4);
         private PointF previousPoint => rectangles.Count == 0 ? new PointF(0, 0) : rectangles[rectangles.Count - 1].Location;
         private PointF previousRadiusPoint;
         public CircularCloudLayouter(PointF center)
@@ -32,8 +35,8 @@ namespace TagsCloudVisualisation
             }
             else if (rectangles.Count == 1)
             {
-                rectangles.Add(new RectangleF(new PointF(radius,previousPoint.Y), rectangleSize));
-                previousRadiusPoint=new PointF(radius,previousPoint.Y);
+                rectangles.Add(new RectangleF(new PointF(radius, previousPoint.Y), rectangleSize));
+                previousRadiusPoint = new PointF(radius, previousPoint.Y);
                 return rectangles[rectangles.Count - 1];
             }
             radius++;
@@ -50,10 +53,22 @@ namespace TagsCloudVisualisation
             //rectangles.Add(new RectangleF(new PointF(x, y - rectangleSize.Height - rectangles[0].Height), rectangleSize));
             //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-Math.Abs(previousPoint.Y-rectangleSize.Height)), rectangleSize));
             //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-rectangleSize.Height), rectangleSize));
-            rectangles.Add(new RectangleF(new PointF(2*x-previousPoint.X, (y<0?(previousPoint.Y-rectangleSize.Height):y)), rectangleSize));
-            previousRadiusPoint=new PointF((float) (x+Math.Sign(x)*Math.Sqrt(2)/2),(float) (y+Math.Sign(y)*Math.Sqrt(2)/2));
+            rectangles.Add(new RectangleF(new PointF(2 * x - previousPoint.X, (y < 0 ? (previousPoint.Y - rectangleSize.Height) : y)), rectangleSize));
+            previousRadiusPoint = new PointF((float)(x + Math.Sign(x) * Math.Sqrt(2) / 2), (float)(y + Math.Sign(y) * Math.Sqrt(2) / 2));
             return rectangles[rectangles.Count - 1];
         }
 
+        public void SaveLayout(string filename)
+        {
+            var bitmap = new Bitmap(800, 600);
+            var graphics = Graphics.FromImage(bitmap);
+            graphics.Clear(Color.White);
+            graphics.DrawRectangles(Pens.Black, rectangles.ToArray());
+            //foreach (var rectangle in rectangles)
+            //{
+            //    graphics.DrawRectangle(Pens.Black, rectangle);
+            //}
+            bitmap.Save(Path.Combine(TestContext.CurrentContext.TestDirectory, $"{filename}.bmp"), ImageFormat.Bmp);
+        }
     }
 }
