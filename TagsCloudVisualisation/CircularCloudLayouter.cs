@@ -1,83 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using FluentAssertions;
-using NUnit.Framework;
+using System.Linq;
 
 namespace TagsCloudVisualisation
 {
     public class CircularCloudLayouter
     {
         private readonly PointF center;
-        private double radius;
-        private List<RectangleF> cloud;
+        private float radius;
+        private List<RectangleF> rectangles;
+        private float angle=(float) (-Math.PI/4);
+        private PointF previousPoint => rectangles.Count == 0 ? new PointF(0, 0) : rectangles[rectangles.Count - 1].Location;
+        private PointF previousRadiusPoint;
         public CircularCloudLayouter(PointF center)
         {
             this.center = center;
-            cloud=new List<RectangleF>();
+            rectangles = new List<RectangleF>();
             radius = 1;
         }
 
         public RectangleF PutNextRectangle(SizeF rectangleSize)
         {
-            if (cloud.Count == 0)
+            if (rectangles.Count == 0)
             {
-                radius = rectangleSize.Width/2.0;
-                var x0 = (float) (center.X - rectangleSize.Width/2.0);
-                var y0 = (float) (center.Y - rectangleSize.Height/2.0);
-                cloud.Add(new RectangleF(new PointF(x0,y0), rectangleSize));
-                return cloud[cloud.Count - 1];
+                radius = (float)(rectangleSize.Width / 2.0);
+                var x0 = (float)(center.X - rectangleSize.Width / 2.0);
+                var y0 = (float)(center.Y - rectangleSize.Height / 2.0);
+                rectangles.Add(new RectangleF(new PointF(x0, y0), rectangleSize));
+                return rectangles[rectangles.Count - 1];
             }
-            else
+            else if (rectangles.Count == 1)
             {
-                cloud.Add(new RectangleF(new PointF(1,1), rectangleSize));
-                return cloud[cloud.Count - 1];
+                rectangles.Add(new RectangleF(new PointF(radius,previousPoint.Y), rectangleSize));
+                previousRadiusPoint=new PointF(radius,previousPoint.Y);
+                return rectangles[rectangles.Count - 1];
             }
-            
+            radius++;
+            //var temp = rectangles[rectangles.Count - 1];
+            //var x = (float)(temp.X * (1 - Math.Cos(Math.PI / 4)));
+            //var y = (float)(-temp.Y * Math.Cos(Math.PI / 4));
+            //var x = (float) (previousPoint.X*Math.Cos(angle) - previousPoint.Y*Math.Sin(angle));
+            //var y = (float) (previousPoint.X*Math.Sin(angle) + previousPoint.Y*Math.Cos(angle));
+
+            var x = (float)(previousRadiusPoint.X * Math.Cos(angle) - previousRadiusPoint.Y * Math.Sin(angle));
+            var y = (float)(previousRadiusPoint.X * Math.Sin(angle) + previousRadiusPoint.Y * Math.Cos(angle));
+
+            //y = y - Math.Abs(rectangles.OrderBy(rect => rect.Top).First().Y);
+            //rectangles.Add(new RectangleF(new PointF(x, y - rectangleSize.Height - rectangles[0].Height), rectangleSize));
+            //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-Math.Abs(previousPoint.Y-rectangleSize.Height)), rectangleSize));
+            //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-rectangleSize.Height), rectangleSize));
+            rectangles.Add(new RectangleF(new PointF(2*x-previousPoint.X, (y<0?(previousPoint.Y-rectangleSize.Height):y)), rectangleSize));
+            previousRadiusPoint=new PointF((float) (x+Math.Sign(x)*Math.Sqrt(2)/2),(float) (y+Math.Sign(y)*Math.Sqrt(2)/2));
+            return rectangles[rectangles.Count - 1];
         }
 
-    }
-
-    [TestFixture]
-    public class CircularCloudLayouter_Should
-    {
-        private CircularCloudLayouter layouter;
-        [SetUp]
-        public void SetUp()
-        {
-            layouter=new CircularCloudLayouter(new Point(0,0));
-        }
-
-        [Test]
-        public void PlaceInCenter_ZeroRectangle()
-        {
-            var rectangle=layouter.PutNextRectangle(new Size(0, 0));
-            rectangle.Location.Should().Be(new PointF(0, 0));
-        }
-
-        [Test]
-        public void PlaceInCenter_OneRectangle()
-        {
-            var rectangle = layouter.PutNextRectangle(new Size(1, 1));
-            rectangle.Should().Match(rect => ((RectangleF)rect).IntersectsWith(new RectangleF(0, 0, 0, 0)));
-
-        }
-
-        [Test]
-        public void PlaceWithoutIntersection_TwoRectangles()
-        {
-            var first = layouter.PutNextRectangle(new Size(1, 1));
-            var second = layouter.PutNextRectangle(new Size(1, 1));
-            first.Should().Match(rect => !((RectangleF) rect).IntersectsWith(second));
-        }
-
-        [Test]
-        public void PlaceWithoudIntersection_TwoDifferentRectangles()
-        {
-            var first = layouter.PutNextRectangle(new Size(2, 5));
-            var second = layouter.PutNextRectangle(new Size(3, 4));
-            Assert.IsTrue(!first.IntersectsWith(second));
-        }
-        
     }
 }
