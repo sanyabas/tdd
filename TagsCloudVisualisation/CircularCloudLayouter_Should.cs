@@ -51,9 +51,9 @@ namespace TagsCloudVisualisation
         [Test]
         public void PlaceWithoutIntersection_ThreeRectangles()
         {
-            var first = layouter.PutNextRectangle(new SizeF(8, 5));
-            var second = layouter.PutNextRectangle(new SizeF(7, 7));
-            var third = layouter.PutNextRectangle(new SizeF(10, 3));
+            var first = layouter.PutNextRectangle(new SizeF(80, 50));
+            var second = layouter.PutNextRectangle(new SizeF(70, 70));
+            var third = layouter.PutNextRectangle(new SizeF(100, 30));
             CheckIntersection(first, second, third);
         }
 

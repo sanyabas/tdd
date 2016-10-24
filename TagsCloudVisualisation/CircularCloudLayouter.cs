@@ -52,8 +52,10 @@ namespace TagsCloudVisualisation
             //rectangles.Add(new RectangleF(new PointF(x, y - rectangleSize.Height - rectangles[0].Height), rectangleSize));
             //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-Math.Abs(previousPoint.Y-rectangleSize.Height)), rectangleSize));
             //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-rectangleSize.Height), rectangleSize));
-            rectangles.Add(new RectangleF(new PointF(2 * x - previousPoint.X, (y < 0 ? (previousPoint.Y - rectangleSize.Height) : y)), rectangleSize));
-            previousRadiusPoint = new PointF((float)(x + Math.Sign(x) * Math.Sqrt(2) / 2+center.X), (float)(y + Math.Sign(y) * Math.Sqrt(2) / 2+center.Y));
+            rectangles.Add(new RectangleF(new PointF(2 * x - tempPrevious.X+center.X, (y < 0 ? (tempPrevious.Y - rectangleSize.Height) : y)+center.Y), rectangleSize));
+            x += center.X;
+            y += center.Y;
+            previousRadiusPoint = new PointF((float)(x + Math.Sign(x) * Math.Sqrt(2) / 2), (float)(y + Math.Sign(y) * Math.Sqrt(2) / 2));
             return rectangles[rectangles.Count - 1];
         }
 
@@ -63,10 +65,6 @@ namespace TagsCloudVisualisation
             var graphics = Graphics.FromImage(bitmap);
             graphics.Clear(Color.White);
             graphics.DrawRectangles(Pens.Black, rectangles.ToArray());
-            //foreach (var rectangle in rectangles)
-            //{
-            //    graphics.DrawRectangle(Pens.Black, rectangle);
-            //}
             bitmap.Save(Path.Combine(TestContext.CurrentContext.TestDirectory, $"{filename}.bmp"), ImageFormat.Bmp);
         }
     }
