@@ -63,8 +63,8 @@ namespace TagsCloudVisualisation
         {
             var bitmap = new Bitmap(800, 600);
             var graphics = Graphics.FromImage(bitmap);
-            graphics.Clear(Color.White);
-            graphics.DrawRectangles(Pens.Black, rectangles.ToArray());
+            graphics.Clear(Color.Black);
+            graphics.DrawRectangles(new Pen(Color.Brown, 3), rectangles.ToArray());
             bitmap.Save(Path.Combine(TestContext.CurrentContext.TestDirectory, $"{filename}.bmp"), ImageFormat.Bmp);
         }
     }
