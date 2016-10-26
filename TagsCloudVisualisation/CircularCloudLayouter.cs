@@ -37,6 +37,8 @@ namespace TagsCloudVisualisation
             {
                 rectangles.Add(new RectangleF(new PointF(center.X+radius, previousPoint.Y), rectangleSize));
                 previousRadiusPoint = new PointF(center.X+radius, previousPoint.Y);
+
+            SaveLayout(rectangles.Count.ToString());
                 return rectangles[rectangles.Count - 1];
             }
             radius++;
@@ -53,9 +55,12 @@ namespace TagsCloudVisualisation
             //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-Math.Abs(previousPoint.Y-rectangleSize.Height)), rectangleSize));
             //rectangles.Add(new RectangleF(new PointF(x-Math.Abs(previousPoint.X-rectangleSize.Width),y-rectangleSize.Height), rectangleSize));
             rectangles.Add(new RectangleF(new PointF(2 * x - tempPrevious.X+center.X, (y < 0 ? (tempPrevious.Y - rectangleSize.Height) : y)+center.Y), rectangleSize));
-            x += center.X;
-            y += center.Y;
-            previousRadiusPoint = new PointF((float)(x + Math.Sign(x) * Math.Sqrt(2) / 2), (float)(y + Math.Sign(y) * Math.Sqrt(2) / 2));
+            x =(float) (x+ Math.Sign(x) * Math.Sqrt(2) / 2+center.X);
+            y = (float)(y + Math.Sign(y) * Math.Sqrt(2) / 2)+ center.Y;
+            //previousRadiusPoint = new PointF((float)(x + Math.Sign(x) * Math.Sqrt(2) / 2), (float)(y + Math.Sign(y) * Math.Sqrt(2) / 2));
+            previousRadiusPoint = new PointF(x, y);
+            SaveLayout(rectangles.Count.ToString());
+
             return rectangles[rectangles.Count - 1];
         }
 

@@ -9,41 +9,44 @@ namespace TagsCloudVisualisation
     public class CircularCloudLayouter_Should
     {
         private CircularCloudLayouter layouter;
+        private Point center;
         private int number = 0;
         [SetUp]
         public void SetUp()
         {
-            layouter = new CircularCloudLayouter(new Point(400, 300));
+            center = new Point(400, 300);
+            layouter = new CircularCloudLayouter(center);
         }
 
         [Test]
         public void PlaceInCenter_ZeroRectangle()
         {
             var rectangle = layouter.PutNextRectangle(new Size(0, 0));
-            rectangle.Location.Should().Be(new PointF(0, 0));
+            Assert.AreEqual(rectangle.Location.X,center.X,1e-3);
+            Assert.AreEqual(rectangle.Location.Y,center.Y,1e-3);
         }
 
         [Test]
         public void PlaceInCenter_OneRectangle()
         {
-            var rectangle = layouter.PutNextRectangle(new Size(1, 1));
-            rectangle.Should().Match(rect => ((RectangleF)rect).IntersectsWith(new RectangleF(0, 0, 0, 0)));
+            var rectangle = layouter.PutNextRectangle(new Size(100, 100));
+            rectangle.Should().Match(rect => ((RectangleF)rect).IntersectsWith(new RectangleF(center, new SizeF(0, 0))));
 
         }
 
         [Test]
         public void PlaceWithoutIntersection_TwoRectangles()
         {
-            var first = layouter.PutNextRectangle(new Size(3, 3));
-            var second = layouter.PutNextRectangle(new Size(3, 3));
+            var first = layouter.PutNextRectangle(new Size(73, 73));
+            var second = layouter.PutNextRectangle(new Size(73, 73));
             first.Should().Match(rect => !((RectangleF)rect).IntersectsWith(second));
         }
 
         [Test]
         public void PlaceWithoudIntersection_TwoDifferentRectangles()
         {
-            var first = layouter.PutNextRectangle(new Size(10, 10));
-            var second = layouter.PutNextRectangle(new Size(10, 10));
+            var first = layouter.PutNextRectangle(new Size(100, 80));
+            var second = layouter.PutNextRectangle(new Size(50, 30));
             CheckIntersection(first, second);
 
         }
@@ -69,7 +72,7 @@ namespace TagsCloudVisualisation
             var random = new Random();
             var rectangles = new RectangleF[number];
             for (var i = 0; i < number; i++)
-                rectangles[i] = layouter.PutNextRectangle(new SizeF(random.Next(3, 8), random.Next(1, 4)));
+                rectangles[i] = layouter.PutNextRectangle(new SizeF(random.Next(80, 200), random.Next(20, 80)));
             CheckIntersection(rectangles);
         }
 
