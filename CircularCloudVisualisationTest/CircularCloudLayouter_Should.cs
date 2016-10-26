@@ -48,7 +48,7 @@ namespace CircularCloudVisualisationTest
         }
 
         [Test]
-        public void PlaceWithoudIntersection_TwoDifferentRectangles()
+        public void PlaceWithoutIntersection_TwoDifferentRectangles()
         {
             var first = layouter.PutNextRectangle(new Size(100, 80));
             var second = layouter.PutNextRectangle(new Size(50, 30));
@@ -85,7 +85,8 @@ namespace CircularCloudVisualisationTest
         public void TearDown()
         {
             number++;
-            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, $"{number}.bmp");
+            var name = TestContext.CurrentContext.Test.Name;
+            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, $"{name}.bmp");
             visualiser.Save(layouter.GetLayout(), path, ImageFormat.Bmp);
         }
 
