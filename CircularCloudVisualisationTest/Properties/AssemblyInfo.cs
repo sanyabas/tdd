@@ -1,14 +1,15 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TagsCloudVisualisation")]
+[assembly: AssemblyTitle("CircularCloudVisualisationTest")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TagsCloudVisualisation")]
+[assembly: AssemblyProduct("CircularCloudVisualisationTest")]
 [assembly: AssemblyCopyright("Copyright ©  2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("77ffb6a4-b3e6-411a-9eef-fef6af217338")]
+[assembly: Guid("1a4d8dac-a488-4e8a-8137-e9fbea12c891")]
 
 // Version information for an assembly consists of the following four values:
 //

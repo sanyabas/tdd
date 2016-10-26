@@ -1,29 +1,34 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
+using TagsCloudVisualisation;
 
-namespace TagsCloudVisualisation
+namespace CircularCloudVisualisationTest
 {
     [TestFixture]
     public class CircularCloudLayouter_Should
     {
         private CircularCloudLayouter layouter;
+        private CircularCloudVisualiser visualiser;
         private Point center;
-        private int number = 0;
+        private int number;
         [SetUp]
         public void SetUp()
         {
             center = new Point(400, 300);
             layouter = new CircularCloudLayouter(center);
+            visualiser = new CircularCloudVisualiser();
         }
 
         [Test]
         public void PlaceInCenter_ZeroRectangle()
         {
             var rectangle = layouter.PutNextRectangle(new Size(0, 0));
-            Assert.AreEqual(rectangle.Location.X,center.X,1e-3);
-            Assert.AreEqual(rectangle.Location.Y,center.Y,1e-3);
+            Assert.AreEqual(rectangle.Location.X, center.X, 1e-3);
+            Assert.AreEqual(rectangle.Location.Y, center.Y, 1e-3);
         }
 
         [Test]
@@ -67,11 +72,11 @@ namespace TagsCloudVisualisation
         [TestCase(4, TestName = "four")]
         [TestCase(5, TestName = "five")]
         [TestCase(20, TestName = "twenty")]
-        public void PlaceWithoutIntersection_RandomRectangles(int number)
+        public void PlaceWithoutIntersection_RandomRectangles(int rectanglesNumber)
         {
             var random = new Random();
-            var rectangles = new RectangleF[number];
-            for (var i = 0; i < number; i++)
+            var rectangles = new RectangleF[rectanglesNumber];
+            for (var i = 0; i < rectanglesNumber; i++)
                 rectangles[i] = layouter.PutNextRectangle(new SizeF(random.Next(80, 200), random.Next(20, 80)));
             CheckIntersection(rectangles);
         }
@@ -80,7 +85,8 @@ namespace TagsCloudVisualisation
         public void TearDown()
         {
             number++;
-            layouter.SaveLayout(number.ToString());
+            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, $"{number}.bmp");
+            visualiser.Save(layouter.GetLayout(), path, ImageFormat.Bmp);
         }
 
         private void CheckIntersection(params RectangleF[] rectangles)
