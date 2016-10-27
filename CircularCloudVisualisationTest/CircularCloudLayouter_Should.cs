@@ -85,6 +85,18 @@ namespace CircularCloudVisualisationTest
             CheckIntersection(rectangles);
         }
 
+        [Test]
+        public void PlaceWithoutIntersection_200Squares()
+        {
+            const int number = 200;
+            var rectangles = new RectangleF[number];
+            for (var i = 0; i < number; i++)
+            {
+                rectangles[i] = layouter.PutNextRectangle(new SizeF(30, 30));
+            }
+            CheckIntersection(rectangles);
+        }
+
         [TearDown]
         public void TearDown()
         {
