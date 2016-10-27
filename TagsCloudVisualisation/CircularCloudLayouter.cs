@@ -47,7 +47,7 @@ namespace TagsCloudVisualisation
                 var previousShifted = new PointF(previousRadiusPoint.X-center.X,previousRadiusPoint.Y-center.Y);
                 var x = shifted.X;
                 var y = shifted.Y;
-                var x0 = 2 * x - previousShifted.X;
+                var x0 = 2 * x - shifted.X;
                 var y0 = y;
                 if (y < 0)
                 {
