@@ -4,9 +4,9 @@ using System.Drawing.Imaging;
 
 namespace TagsCloudVisualisation
 {
-    public interface IVisualiser
+    public interface IVisualizer
     {
         Bitmap Visualise(List<RectangleF> layout);
-        void Save(List<RectangleF> layout, string filename, ImageFormat format);
+        void VisualizeAndSave(List<RectangleF> layout, string filename, ImageFormat format);
     }
 }

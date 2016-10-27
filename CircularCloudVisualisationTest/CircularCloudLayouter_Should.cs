@@ -12,15 +12,15 @@ namespace CircularCloudVisualisationTest
     public class CircularCloudLayouter_Should
     {
         private CircularCloudLayouter layouter;
-        private CircularCloudVisualiser visualiser;
+        private CircularCloudVisualizer visualizer;
         private Point center;
-        private int number;
+
         [SetUp]
         public void SetUp()
         {
             center = new Point(400, 300);
             layouter = new CircularCloudLayouter(center);
-            visualiser = new CircularCloudVisualiser();
+            visualizer = new CircularCloudVisualizer();
         }
 
         [Test]
@@ -86,7 +86,7 @@ namespace CircularCloudVisualisationTest
             {
                 rectangles[i] = layouter.PutNextRectangle(new SizeF(random.Next(5, 8)*10, random.Next(2, 5)*10));
                 var path = Path.Combine(directory.FullName, $"{i}.bmp");
-                visualiser.Save(layouter.GetLayout(), path, ImageFormat.Bmp);
+                visualizer.VisualizeAndSave(layouter.GetLayout(), path, ImageFormat.Bmp);
             }
             CheckIntersection(rectangles);
         }
@@ -94,10 +94,9 @@ namespace CircularCloudVisualisationTest
         [TearDown]
         public void TearDown()
         {
-            number++;
             var name = TestContext.CurrentContext.Test.Name;
             var path = Path.Combine(TestContext.CurrentContext.TestDirectory, $"{name}.bmp");
-            visualiser.Save(layouter.GetLayout(), path, ImageFormat.Bmp);
+            visualizer.VisualizeAndSave(layouter.GetLayout(), path, ImageFormat.Bmp);
         }
 
         private void CheckIntersection(params RectangleF[] rectangles)

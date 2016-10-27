@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace TagsCloudVisualisation
 {
     public class CircularCloudLayouter : ILayouter
     {
         private readonly PointF center;
-        private float radius;
         private List<RectangleF> rectangles;
         private const float Angle = (float)(-Math.PI / 10);
-        private PointF PreviousPoint => rectangles.Count == 0 ? new PointF(0, 0) : rectangles[rectangles.Count - 1].Location;
         private PointF previousRadiusPoint;
 
         public List<RectangleF> GetLayout()
@@ -29,91 +28,78 @@ namespace TagsCloudVisualisation
             PointF placingPoint;
             if (rectangles.Count == 0)
             {
-                radius = (float)(rectangleSize.Width / 2.0);
-                var x0 = (float)(center.X - rectangleSize.Width / 2.0);
-                var y0 = (float)(center.Y - rectangleSize.Height / 2.0);
-                placingPoint = new PointF(x0, y0);
+                var delta = new PointF(rectangleSize.Width / 2, rectangleSize.Height / 2);
+                placingPoint = center.Sub(delta);
             }
             else if (rectangles.Count == 1)
-            {
-                placingPoint = new PointF(center.X + radius, PreviousPoint.Y);
-                previousRadiusPoint = new PointF(center.X + radius, PreviousPoint.Y);
-            }
-            //else
-            //{
-            //    radius++;
-            //    var rotated = RotateAroundCenter(previousRadiusPoint);
-            //    var shifted = new PointF(rotated.X-center.X,rotated.Y-center.Y);
-            //    var previousShifted = new PointF(previousRadiusPoint.X-center.X,previousRadiusPoint.Y-center.Y);
-            //    var x = shifted.X;
-            //    var y = shifted.Y;
-            //    var x0 = 2 * x - shifted.X;
-            //    var y0 = y;
-            //    if (y < 0)
-            //    {
-            //        y0 = previousShifted.Y - rectangleSize.Height;
-            //    }
-            //    placingPoint = new PointF(x0+center.X, y0+center.Y);
-            //    x = (float)(x + Math.Sign(x) * Math.Sin(Math.PI/4) + center.X);
-            //    y = (float)(y + Math.Sign(y) * Math.Sin(Math.PI/4) + center.Y);
-            //    previousRadiusPoint = new PointF(x, y);
-            //}
+                previousRadiusPoint = placingPoint = new PointF(rectangles.Last().Right, rectangles.Last().Y);
             else
             {
                 while (true)
                 {
-                    var temporaryPoint = GetNextPoint();
-                    var tempRectangle = new RectangleF(temporaryPoint,rectangleSize);
-                    var intersects = false;
-                    foreach (var rectangle in rectangles)
-                    {
-                        if (rectangle.IntersectsWith(tempRectangle))
-                        {
-                            intersects = true;
-                            break;
-                        }
-                    }
+                    var temporaryPoint = GetNextSpiralPoint();
+                    var tempRectangle = new RectangleF(temporaryPoint, rectangleSize);
+                    var intersects = rectangles.Any(rectangle => rectangle.IntersectsWith(tempRectangle));
                     if (!intersects)
                     {
-                        placingPoint=previousRadiusPoint = temporaryPoint;
+                        placingPoint = previousRadiusPoint = temporaryPoint;
                         break;
                     }
                     previousRadiusPoint = temporaryPoint;
-
                 }
+                var tempResult = new RectangleF(placingPoint, rectangleSize);
+                placingPoint = ShiftToCenter(tempResult).Location;
             }
             rectangles.Add(new RectangleF(placingPoint, rectangleSize));
             return rectangles[rectangles.Count - 1];
         }
 
-        private PointF RotateAroundCenter(PointF point)
+        private PointF RotateAroundCenter(PointF point, double angle)
         {
-            var movedPoint = new PointF(point.X - center.X, point.Y - center.Y);
-            var x = (float)(movedPoint.X * Math.Cos(Angle) - movedPoint.Y * Math.Sin(Angle));
-            var y = (float)(movedPoint.X * Math.Sin(Angle) + movedPoint.Y * Math.Cos(Angle));
-            return new PointF(x+center.X,y+center.Y);
+            var movedPoint = point.Sub(center);
+            var x = (float)(movedPoint.X * Math.Cos(angle) - movedPoint.Y * Math.Sin(angle));
+            var y = (float)(movedPoint.X * Math.Sin(angle) + movedPoint.Y * Math.Cos(angle));
+            return new PointF(x, y).Add(center);
         }
 
-        private PointF GetNextPoint()
+        private PointF GetNextSpiralPoint()
         {
-            var rotated = RotateAroundCenter(previousRadiusPoint);
-            var delta = (float)Math.Sin(Math.PI/4);
+            var rotated = RotateAroundCenter(previousRadiusPoint, Angle);
+            var delta = (float)Math.Sin(Math.PI / 4);
             var relativeToCenter = rotated.Sub(center);
-            var shift = new PointF(Math.Sign(relativeToCenter.X)*delta, Math.Sign(relativeToCenter.Y)*delta);
-            return relativeToCenter.Add(shift).Add(center);
+            var shift = new PointF(Math.Sign(relativeToCenter.X) * delta, Math.Sign(relativeToCenter.Y) * delta);
+            var result = relativeToCenter.Add(shift).Add(center);
+            const int limit = 12;
+            var number = 0;
+            while (IsBehindBounds(result) && number <= limit)
+            {
+                number++;
+                result = RotateAroundCenter(result, -Math.PI / 6);
+            }
+            return result;
         }
-    }
 
-    public static class PointFExtensions
-    {
-        public static PointF Add(this PointF point, PointF another)
+        private bool IsBehindBounds(PointF point)
         {
-            return new PointF(point.X+another.X,point.Y+another.Y);
+            return point.X > 2 * center.X || point.Y > 2 * center.Y || point.X < 0 || point.Y < 0;
         }
 
-        public static PointF Sub(this PointF point, PointF another)
+        private bool RectangleIsBeyondBounds(RectangleF rectangle)
         {
-            return new PointF(point.X-another.X,point.Y-another.Y);
+            return rectangle.Bottom > 2*center.Y || rectangle.Top < 0 || rectangle.Left < 0 ||
+                   rectangle.Right > 2*center.X;
+        }
+
+        private RectangleF ShiftToCenter(RectangleF initialPoint)
+        {
+            const int delta = 5;
+            var dx = initialPoint.X < center.X ? delta : -delta;
+            var dy = initialPoint.Y < center.Y ? delta : -delta;
+            var shift = new PointF(dx, dy);
+            var tempResult = new RectangleF(initialPoint.Location.Add(shift), initialPoint.Size);
+            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)))
+                tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
+            return new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
         }
     }
 }

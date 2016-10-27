@@ -57,10 +57,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CircularCloudVisualiser.cs" />
+    <Compile Include="CircularCloudVisualizer.cs" />
     <Compile Include="CircularCloudLayouter.cs" />
     <Compile Include="ILayouter.cs" />
-    <Compile Include="IVisualiser.cs" />
+    <Compile Include="IVisualizer.cs" />
+    <Compile Include="PointFExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
