@@ -50,8 +50,11 @@ namespace TagsCloudVisualisation
                 var tempResult = new RectangleF(placingPoint, rectangleSize);
                 placingPoint = ShiftToCenter(tempResult).Location;
             }
-            rectangles.Add(new RectangleF(placingPoint, rectangleSize));
-            return rectangles[rectangles.Count - 1];
+            var resultRectangle = new RectangleF(placingPoint, rectangleSize);
+            if (RectangleIsBeyondBounds(resultRectangle))
+                resultRectangle = CheckBounds(resultRectangle);
+            rectangles.Add(resultRectangle);
+            return rectangles.Last();
         }
 
         private PointF RotateAroundCenter(PointF point, double angle)
@@ -125,6 +128,18 @@ namespace TagsCloudVisualisation
             while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.Y - center.Y) > 5)
                 tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
             return new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
+        }
+
+        private RectangleF CheckBounds(RectangleF rectangle)
+        {
+            const int limit = 12;
+            var number = 0;
+            while ((rectangles.Any(rect=>rect.IntersectsWith(rectangle)) || RectangleIsBeyondBounds(rectangle)) && number < limit)
+            {
+                number++;
+                rectangle = new RectangleF(RotateAroundCenter(rectangle.Location, -Math.PI / 6), rectangle.Size);
+            }
+            return rectangle;
         }
     }
 }
