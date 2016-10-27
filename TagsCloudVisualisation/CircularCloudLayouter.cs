@@ -100,17 +100,31 @@ namespace TagsCloudVisualisation
             while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)))
                 tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
             tempResult = new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
-            dx = initialPoint.X < center.X ? delta : -delta;
-            shift = new PointF(dx, 0);
-            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.X-center.X)>5)
-                tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
-            tempResult = new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
-            dy = initialPoint.Y < center.Y ? delta : -delta;
-            shift = new PointF(0, dy);
-            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.Y-center.Y)>5)
-                tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
-            tempResult = new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
+            tempResult = ShiftToCenterByX(tempResult);
+            tempResult = ShiftToCenterByY(tempResult);
             return tempResult;
+        }
+
+        private RectangleF ShiftToCenterByX(RectangleF initial)
+        {
+            const int delta = 5;
+            var dx = initial.X < center.X ? delta : -delta;
+            var shift = new PointF(dx, 0);
+            var tempResult = new RectangleF(initial.Location.Add(shift), initial.Size);
+            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.X - center.X) > 5)
+                tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
+            return new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
+        }
+
+        private RectangleF ShiftToCenterByY(RectangleF initial)
+        {
+            const int delta = 5;
+            var dy = initial.Y < center.Y ? delta : -delta;
+            var shift = new PointF(0,dy);
+            var tempResult = new RectangleF(initial.Location.Add(shift), initial.Size);
+            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.Y - center.Y) > 5)
+                tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
+            return new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
         }
     }
 }
