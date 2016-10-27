@@ -123,7 +123,7 @@ namespace TagsCloudVisualisation
         {
             const int delta = 5;
             var dy = initial.Y < center.Y ? delta : -delta;
-            var shift = new PointF(0,dy);
+            var shift = new PointF(0, dy);
             var tempResult = new RectangleF(initial.Location.Add(shift), initial.Size);
             while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.Y - center.Y) > 5)
                 tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
@@ -134,7 +134,7 @@ namespace TagsCloudVisualisation
         {
             const int limit = 12;
             var number = 0;
-            while ((rectangles.Any(rect=>rect.IntersectsWith(rectangle)) || RectangleIsBeyondBounds(rectangle)) && number < limit)
+            while ((rectangles.Any(rect => rect.IntersectsWith(rectangle)) || RectangleIsBeyondBounds(rectangle)) && number < limit)
             {
                 number++;
                 rectangle = new RectangleF(RotateAroundCenter(rectangle.Location, -Math.PI / 6), rectangle.Size);

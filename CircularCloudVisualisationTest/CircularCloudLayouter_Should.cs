@@ -78,16 +78,10 @@ namespace CircularCloudVisualisationTest
         [TestCase(100, TestName = "hundred")]
         public void PlaceWithoutIntersection_RandomRectangles(int rectanglesNumber)
         {
-            var name = TestContext.CurrentContext.Test.Name;
-            var directory = Directory.CreateDirectory(Path.Combine(TestContext.CurrentContext.TestDirectory,name));
             var random = new Random();
             var rectangles = new RectangleF[rectanglesNumber];
             for (var i = 0; i < rectanglesNumber; i++)
-            {
                 rectangles[i] = layouter.PutNextRectangle(new SizeF(random.Next(5, 8)*10, random.Next(2, 5)*10));
-                var path = Path.Combine(directory.FullName, $"{i}.bmp");
-                visualizer.VisualizeAndSave(layouter.GetLayout(), path, ImageFormat.Bmp);
-            }
             CheckIntersection(rectangles);
         }
 

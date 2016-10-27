@@ -17,8 +17,8 @@ namespace TagsCloudVisualisation
 
         public void VisualizeAndSave(List<RectangleF> layout, string fileFullName, ImageFormat format)
         {
-            var bitmap = Visualise(layout);
-            bitmap.Save(fileFullName, format);
+            using (var bitmap = Visualise(layout))
+                bitmap.Save(fileFullName, format);
         }
     }
 }
