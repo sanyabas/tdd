@@ -71,7 +71,11 @@ namespace CircularCloudVisualisationTest
         [TestCase(3, TestName = "three")]
         [TestCase(4, TestName = "four")]
         [TestCase(5, TestName = "five")]
+        [TestCase(8, TestName = "eight")]
+        [TestCase(10, TestName = "ten")]
         [TestCase(20, TestName = "twenty")]
+        [TestCase(50, TestName = "fifty")]
+        [TestCase(100, TestName = "hundred")]
         public void PlaceWithoutIntersection_RandomRectangles(int rectanglesNumber)
         {
             var name = TestContext.CurrentContext.Test.Name;
@@ -80,7 +84,7 @@ namespace CircularCloudVisualisationTest
             var rectangles = new RectangleF[rectanglesNumber];
             for (var i = 0; i < rectanglesNumber; i++)
             {
-                rectangles[i] = layouter.PutNextRectangle(new SizeF(random.Next(8, 20)*10, random.Next(2, 8)*10));
+                rectangles[i] = layouter.PutNextRectangle(new SizeF(random.Next(5, 8)*10, random.Next(2, 5)*10));
                 var path = Path.Combine(directory.FullName, $"{i}.bmp");
                 visualiser.Save(layouter.GetLayout(), path, ImageFormat.Bmp);
             }

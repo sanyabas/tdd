@@ -9,7 +9,7 @@ namespace TagsCloudVisualisation
         private readonly PointF center;
         private float radius;
         private List<RectangleF> rectangles;
-        private const float Angle = (float)(-Math.PI / 4);
+        private const float Angle = (float)(-Math.PI / 10);
         private PointF PreviousPoint => rectangles.Count == 0 ? new PointF(0, 0) : rectangles[rectangles.Count - 1].Location;
         private PointF previousRadiusPoint;
 
@@ -39,24 +39,48 @@ namespace TagsCloudVisualisation
                 placingPoint = new PointF(center.X + radius, PreviousPoint.Y);
                 previousRadiusPoint = new PointF(center.X + radius, PreviousPoint.Y);
             }
+            //else
+            //{
+            //    radius++;
+            //    var rotated = RotateAroundCenter(previousRadiusPoint);
+            //    var shifted = new PointF(rotated.X-center.X,rotated.Y-center.Y);
+            //    var previousShifted = new PointF(previousRadiusPoint.X-center.X,previousRadiusPoint.Y-center.Y);
+            //    var x = shifted.X;
+            //    var y = shifted.Y;
+            //    var x0 = 2 * x - shifted.X;
+            //    var y0 = y;
+            //    if (y < 0)
+            //    {
+            //        y0 = previousShifted.Y - rectangleSize.Height;
+            //    }
+            //    placingPoint = new PointF(x0+center.X, y0+center.Y);
+            //    x = (float)(x + Math.Sign(x) * Math.Sin(Math.PI/4) + center.X);
+            //    y = (float)(y + Math.Sign(y) * Math.Sin(Math.PI/4) + center.Y);
+            //    previousRadiusPoint = new PointF(x, y);
+            //}
             else
             {
-                radius++;
-                var rotated = RotateAroundCenter(previousRadiusPoint);
-                var shifted = new PointF(rotated.X-center.X,rotated.Y-center.Y);
-                var previousShifted = new PointF(previousRadiusPoint.X-center.X,previousRadiusPoint.Y-center.Y);
-                var x = shifted.X;
-                var y = shifted.Y;
-                var x0 = 2 * x - shifted.X;
-                var y0 = y;
-                if (y < 0)
+                while (true)
                 {
-                    y0 = previousShifted.Y - rectangleSize.Height;
+                    var temporaryPoint = GetNextPoint();
+                    var tempRectangle = new RectangleF(temporaryPoint,rectangleSize);
+                    var intersects = false;
+                    foreach (var rectangle in rectangles)
+                    {
+                        if (rectangle.IntersectsWith(tempRectangle))
+                        {
+                            intersects = true;
+                            break;
+                        }
+                    }
+                    if (!intersects)
+                    {
+                        placingPoint=previousRadiusPoint = temporaryPoint;
+                        break;
+                    }
+                    previousRadiusPoint = temporaryPoint;
+
                 }
-                placingPoint = new PointF(x0+center.X, y0+center.Y);
-                x = (float)(x + Math.Sign(x) * Math.Sin(Math.PI/4) + center.X);
-                y = (float)(y + Math.Sign(y) * Math.Sin(Math.PI/4) + center.Y);
-                previousRadiusPoint = new PointF(x, y);
             }
             rectangles.Add(new RectangleF(placingPoint, rectangleSize));
             return rectangles[rectangles.Count - 1];
@@ -64,10 +88,32 @@ namespace TagsCloudVisualisation
 
         private PointF RotateAroundCenter(PointF point)
         {
-            var movedPoint = new PointF(previousRadiusPoint.X - center.X, PreviousPoint.Y - center.Y);
+            var movedPoint = new PointF(point.X - center.X, point.Y - center.Y);
             var x = (float)(movedPoint.X * Math.Cos(Angle) - movedPoint.Y * Math.Sin(Angle));
             var y = (float)(movedPoint.X * Math.Sin(Angle) + movedPoint.Y * Math.Cos(Angle));
             return new PointF(x+center.X,y+center.Y);
+        }
+
+        private PointF GetNextPoint()
+        {
+            var rotated = RotateAroundCenter(previousRadiusPoint);
+            var delta = (float)Math.Sin(Math.PI/4);
+            var relativeToCenter = rotated.Sub(center);
+            var shift = new PointF(Math.Sign(relativeToCenter.X)*delta, Math.Sign(relativeToCenter.Y)*delta);
+            return relativeToCenter.Add(shift).Add(center);
+        }
+    }
+
+    public static class PointFExtensions
+    {
+        public static PointF Add(this PointF point, PointF another)
+        {
+            return new PointF(point.X+another.X,point.Y+another.Y);
+        }
+
+        public static PointF Sub(this PointF point, PointF another)
+        {
+            return new PointF(point.X-another.X,point.Y-another.Y);
         }
     }
 }
