@@ -86,8 +86,8 @@ namespace TagsCloudVisualisation
 
         private bool RectangleIsBeyondBounds(RectangleF rectangle)
         {
-            return rectangle.Bottom > 2*center.Y || rectangle.Top < 0 || rectangle.Left < 0 ||
-                   rectangle.Right > 2*center.X;
+            return rectangle.Bottom > 2 * center.Y || rectangle.Top < 0 || rectangle.Left < 0 ||
+                   rectangle.Right > 2 * center.X;
         }
 
         private RectangleF ShiftToCenter(RectangleF initialPoint)
@@ -99,7 +99,18 @@ namespace TagsCloudVisualisation
             var tempResult = new RectangleF(initialPoint.Location.Add(shift), initialPoint.Size);
             while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)))
                 tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
-            return new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
+            tempResult = new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
+            dx = initialPoint.X < center.X ? delta : -delta;
+            shift = new PointF(dx, 0);
+            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.X-center.X)>5)
+                tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
+            tempResult = new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
+            dy = initialPoint.Y < center.Y ? delta : -delta;
+            shift = new PointF(0, dy);
+            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.Y-center.Y)>5)
+                tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
+            tempResult = new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
+            return tempResult;
         }
     }
 }
