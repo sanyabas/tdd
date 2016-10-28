@@ -66,7 +66,9 @@
   </Choose>
   <ItemGroup>
     <Compile Include="CircularCloudLayouter_Should.cs" />
+    <Compile Include="PointFExtensions_Should.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RectangleFExtensions_Should.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TagsCloudVisualisation\TagsCloudVisualisation.csproj">
