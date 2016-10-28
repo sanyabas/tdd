@@ -9,8 +9,12 @@ namespace TagsCloudVisualisation
     {
         private readonly PointF center;
         private List<RectangleF> rectangles;
-        private const float Angle = (float)(-Math.PI / 10);
+        private const float SpiralRotationAngle = (float)(-Math.PI / 10);
+        private static readonly float SpiralLengthDelta = (float)Math.Sin(Math.PI / 4);
+        private static readonly double BoundRotationAngle = -Math.PI / 6;
         private PointF previousRadiusPoint;
+        private const int Delta = 5;
+        private readonly SizeF bounds;
 
         public List<RectangleF> GetLayout()
         {
@@ -21,6 +25,7 @@ namespace TagsCloudVisualisation
         {
             this.center = center;
             rectangles = new List<RectangleF>();
+            bounds = new SizeF(center.X * 2, center.Y * 2);
         }
 
         public RectangleF PutNextRectangle(SizeF rectangleSize)
@@ -31,15 +36,13 @@ namespace TagsCloudVisualisation
                 var delta = new PointF(rectangleSize.Width / 2, rectangleSize.Height / 2);
                 placingPoint = center.Sub(delta);
             }
-            else if (rectangles.Count == 1)
-                previousRadiusPoint = placingPoint = new PointF(rectangles.Last().Right, rectangles.Last().Y);
             else
             {
                 while (true)
                 {
                     var temporaryPoint = GetNextSpiralPoint();
                     var tempRectangle = new RectangleF(temporaryPoint, rectangleSize);
-                    var intersects = rectangles.Any(rectangle => rectangle.IntersectsWith(tempRectangle));
+                    var intersects = tempRectangle.IntersectsWith(rectangles);
                     if (!intersects)
                     {
                         placingPoint = previousRadiusPoint = temporaryPoint;
@@ -48,84 +51,71 @@ namespace TagsCloudVisualisation
                     previousRadiusPoint = temporaryPoint;
                 }
                 var tempResult = new RectangleF(placingPoint, rectangleSize);
+                tempResult = ShiftToCenter(tempResult);
+                if (tempResult.IsBehindBounds(bounds))
+                    tempResult = CheckBounds(tempResult);
                 placingPoint = ShiftToCenter(tempResult).Location;
             }
             var resultRectangle = new RectangleF(placingPoint, rectangleSize);
-            if (RectangleIsBeyondBounds(resultRectangle))
-                resultRectangle = CheckBounds(resultRectangle);
             rectangles.Add(resultRectangle);
             return rectangles.Last();
         }
 
-        private PointF RotateAroundCenter(PointF point, double angle)
-        {
-            var movedPoint = point.Sub(center);
-            var x = (float)(movedPoint.X * Math.Cos(angle) - movedPoint.Y * Math.Sin(angle));
-            var y = (float)(movedPoint.X * Math.Sin(angle) + movedPoint.Y * Math.Cos(angle));
-            return new PointF(x, y).Add(center);
-        }
-
         private PointF GetNextSpiralPoint()
         {
-            var rotated = RotateAroundCenter(previousRadiusPoint, Angle);
-            var delta = (float)Math.Sin(Math.PI / 4);
+            if (rectangles.Count == 1)
+            {
+                var previousRectangle = rectangles.Last();
+                return new PointF(previousRectangle.Right, previousRectangle.Top);
+            }
+            var rotated = previousRadiusPoint.RotateAround(center, SpiralRotationAngle);
             var relativeToCenter = rotated.Sub(center);
-            var shift = new PointF(Math.Sign(relativeToCenter.X) * delta, Math.Sign(relativeToCenter.Y) * delta);
+            var shift = new PointF(Math.Sign(relativeToCenter.X) * SpiralLengthDelta, Math.Sign(relativeToCenter.Y) * SpiralLengthDelta);
             var result = relativeToCenter.Add(shift).Add(center);
             const int limit = 12;
             var number = 0;
-            while (IsBehindBounds(result) && number <= limit)
+            while (result.IsBehindBounds(bounds) && number <= limit)
             {
                 number++;
-                result = RotateAroundCenter(result, -Math.PI / 6);
+                result = result.RotateAround(center, BoundRotationAngle);
             }
             return result;
         }
-
-        private bool IsBehindBounds(PointF point)
-        {
-            return point.X > 2 * center.X || point.Y > 2 * center.Y || point.X < 0 || point.Y < 0;
-        }
-
-        private bool RectangleIsBeyondBounds(RectangleF rectangle)
-        {
-            return rectangle.Bottom > 2 * center.Y || rectangle.Top < 0 || rectangle.Left < 0 ||
-                   rectangle.Right > 2 * center.X;
-        }
-
+        
         private RectangleF ShiftToCenter(RectangleF initialPoint)
         {
-            const int delta = 5;
-            var dx = initialPoint.X < center.X ? delta : -delta;
-            var dy = initialPoint.Y < center.Y ? delta : -delta;
-            var shift = new PointF(dx, dy);
-            var tempResult = new RectangleF(initialPoint.Location.Add(shift), initialPoint.Size);
-            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)))
-                tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
-            tempResult = new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
-            tempResult = ShiftToCenterByX(tempResult);
-            tempResult = ShiftToCenterByY(tempResult);
-            return tempResult;
+            var shiftedByDiagonal = ShiftToCenter(initialPoint, GetShiftToCenter, rect => true);
+            var shiftedByX = ShiftToCenter(shiftedByDiagonal, GetShiftToCenterByX,
+                rect => Math.Abs(rect.X - center.X) > 5);
+            var shiftedByY = ShiftToCenter(shiftedByX, GetShiftToCenterByY, rect => Math.Abs(rect.Y - center.Y) > 5);
+            return shiftedByY;
         }
 
-        private RectangleF ShiftToCenterByX(RectangleF initial)
+        private PointF GetShiftToCenter(RectangleF rectangle)
         {
-            const int delta = 5;
-            var dx = initial.X < center.X ? delta : -delta;
-            var shift = new PointF(dx, 0);
-            var tempResult = new RectangleF(initial.Location.Add(shift), initial.Size);
-            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.X - center.X) > 5)
-                tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
-            return new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
+            var dx = rectangle.X < center.X ? Delta : -Delta;
+            var dy = rectangle.Y < center.Y ? Delta : -Delta;
+            return new PointF(dx, dy);
         }
 
-        private RectangleF ShiftToCenterByY(RectangleF initial)
+        private PointF GetShiftToCenterByX(RectangleF rectangle)
         {
-            const int delta = 5;
-            var dy = initial.Y < center.Y ? delta : -delta;
-            var shift = new PointF(0, dy);
+            var dx = rectangle.X < center.X ? Delta : -Delta;
+            return new PointF(dx, 0);
+        }
+
+        private PointF GetShiftToCenterByY(RectangleF rectangle)
+        {
+            var dy = rectangle.Y < center.Y ? Delta : -Delta;
+            return new PointF(0, dy);
+        }
+
+        private RectangleF ShiftToCenter(RectangleF initial, Func<RectangleF, PointF> getShift,
+            Func<RectangleF, bool> condition)
+        {
+            var shift = getShift(initial);
             var tempResult = new RectangleF(initial.Location.Add(shift), initial.Size);
-            while (!rectangles.Any(rect => rect.IntersectsWith(tempResult)) && Math.Abs(tempResult.Y - center.Y) > 5)
+            while (!tempResult.IntersectsWith(rectangles) && condition(tempResult))
                 tempResult = new RectangleF(tempResult.Location.Add(shift), tempResult.Size);
             return new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
         }
@@ -134,10 +124,10 @@ namespace TagsCloudVisualisation
         {
             const int limit = 12;
             var number = 0;
-            while ((rectangles.Any(rect => rect.IntersectsWith(rectangle)) || RectangleIsBeyondBounds(rectangle)) && number < limit)
+            while ((rectangle.IntersectsWith(rectangles) || rectangle.IsBehindBounds(bounds)) && number < limit)
             {
                 number++;
-                rectangle = new RectangleF(RotateAroundCenter(rectangle.Location, -Math.PI / 6), rectangle.Size);
+                rectangle = new RectangleF(rectangle.Location.RotateAround(center, BoundRotationAngle), rectangle.Size);
             }
             return rectangle;
         }
