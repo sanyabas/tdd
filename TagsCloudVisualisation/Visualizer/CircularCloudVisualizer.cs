@@ -2,9 +2,9 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace TagsCloudVisualisation
+namespace TagsCloudVisualisation.Visualizer
 {
-    public class CircularCloudVisualizer : IVisualizer
+    public class CircularCloudVisualizer : ITagsCloudVisualizer
     {
         public Bitmap Visualise(List<RectangleF> layout)
         {

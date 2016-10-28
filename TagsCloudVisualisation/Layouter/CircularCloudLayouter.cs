@@ -2,19 +2,21 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using TagsCloudVisualisation.Extensions;
 
-namespace TagsCloudVisualisation
+namespace TagsCloudVisualisation.Layouter
 {
-    public class CircularCloudLayouter : ILayouter
+    public class CircularCloudLayouter : ITagsCLoudLayouter
     {
         private readonly PointF center;
         private List<RectangleF> rectangles;
         private const float SpiralRotationAngle = (float)(-Math.PI / 10);
         private static readonly float SpiralLengthDelta = (float)Math.Sin(Math.PI / 4);
-        private static readonly double BoundRotationAngle = -Math.PI / 6;
+        private const double BoundRotationAngle = -Math.PI / 6;
         private PointF previousRadiusPoint;
         private const int Delta = 5;
         private readonly SizeF bounds;
+        private const int RotationLimit = 12;
 
         public List<RectangleF> GetLayout()
         {
@@ -53,7 +55,7 @@ namespace TagsCloudVisualisation
                 var tempResult = new RectangleF(placingPoint, rectangleSize);
                 tempResult = ShiftToCenter(tempResult);
                 if (tempResult.IsBehindBounds(bounds))
-                    tempResult = CheckBounds(tempResult);
+                    tempResult = TryRotateInBounds(tempResult);
                 placingPoint = ShiftToCenter(tempResult).Location;
             }
             var resultRectangle = new RectangleF(placingPoint, rectangleSize);
@@ -72,16 +74,15 @@ namespace TagsCloudVisualisation
             var relativeToCenter = rotated.Sub(center);
             var shift = new PointF(Math.Sign(relativeToCenter.X) * SpiralLengthDelta, Math.Sign(relativeToCenter.Y) * SpiralLengthDelta);
             var result = relativeToCenter.Add(shift).Add(center);
-            const int limit = 12;
             var number = 0;
-            while (result.IsBehindBounds(bounds) && number <= limit)
+            while (result.IsBehindBounds(bounds) && number <= RotationLimit)
             {
                 number++;
                 result = result.RotateAround(center, BoundRotationAngle);
             }
             return result;
         }
-        
+
         private RectangleF ShiftToCenter(RectangleF initialPoint)
         {
             var shiftedByDiagonal = ShiftToCenter(initialPoint, GetShiftToCenter, rect => true);
@@ -120,11 +121,10 @@ namespace TagsCloudVisualisation
             return new RectangleF(tempResult.Location.Sub(shift), tempResult.Size);
         }
 
-        private RectangleF CheckBounds(RectangleF rectangle)
+        private RectangleF TryRotateInBounds(RectangleF rectangle)
         {
-            const int limit = 12;
             var number = 0;
-            while ((rectangle.IntersectsWith(rectangles) || rectangle.IsBehindBounds(bounds)) && number < limit)
+            while ((rectangle.IntersectsWith(rectangles) || rectangle.IsBehindBounds(bounds)) && number < RotationLimit)
             {
                 number++;
                 rectangle = new RectangleF(rectangle.Location.RotateAround(center, BoundRotationAngle), rectangle.Size);

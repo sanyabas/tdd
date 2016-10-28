@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 
-namespace TagsCloudVisualisation
+namespace TagsCloudVisualisation.Layouter
 {
-    public interface ILayouter
+    public interface ITagsCLoudLayouter
     {
         List<RectangleF> GetLayout();
     }

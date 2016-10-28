@@ -4,7 +4,8 @@ using System.Drawing.Imaging;
 using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
-using TagsCloudVisualisation;
+using TagsCloudVisualisation.Layouter;
+using TagsCloudVisualisation.Visualizer;
 
 namespace CircularCloudVisualisationTest
 {
