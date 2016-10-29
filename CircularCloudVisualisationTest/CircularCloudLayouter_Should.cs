@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
+using TagsCloudVisualisation.Extensions;
 using TagsCloudVisualisation.Layouter;
 using TagsCloudVisualisation.Visualizer;
 
@@ -15,6 +18,7 @@ namespace CircularCloudVisualisationTest
         private CircularCloudLayouter layouter;
         private CircularCloudVisualizer visualizer;
         private Point center;
+        private const double DensityFactor = 0.6;
 
         [SetUp]
         public void SetUp()
@@ -53,7 +57,7 @@ namespace CircularCloudVisualisationTest
         {
             var first = layouter.PutNextRectangle(new Size(100, 80));
             var second = layouter.PutNextRectangle(new Size(50, 30));
-            CheckIntersection(first, second);
+            CheckIntersection(new List<RectangleF> { first, second });
 
         }
 
@@ -63,7 +67,7 @@ namespace CircularCloudVisualisationTest
             var first = layouter.PutNextRectangle(new SizeF(80, 50));
             var second = layouter.PutNextRectangle(new SizeF(70, 70));
             var third = layouter.PutNextRectangle(new SizeF(100, 30));
-            CheckIntersection(first, second, third);
+            CheckIntersection(new List<RectangleF> { first, second, third });
         }
 
         [Test]
@@ -80,22 +84,30 @@ namespace CircularCloudVisualisationTest
         public void PlaceWithoutIntersection_RandomRectangles(int rectanglesNumber)
         {
             var random = new Random();
-            var rectangles = new RectangleF[rectanglesNumber];
             for (var i = 0; i < rectanglesNumber; i++)
-                rectangles[i] = layouter.PutNextRectangle(new SizeF(random.Next(5, 8)*10, random.Next(2, 5)*10));
-            CheckIntersection(rectangles);
+                layouter.PutNextRectangle(new SizeF(random.Next(5, 8) * 10, random.Next(2, 5) * 10));
+            CheckIntersection(layouter.GetLayout());
         }
 
         [Test]
         public void PlaceWithoutIntersection_200Squares()
         {
             const int number = 200;
-            var rectangles = new RectangleF[number];
             for (var i = 0; i < number; i++)
             {
-                rectangles[i] = layouter.PutNextRectangle(new SizeF(30, 30));
+                layouter.PutNextRectangle(new SizeF(30, 30));
             }
-            CheckIntersection(rectangles);
+            CheckIntersection(layouter.GetLayout());
+        }
+
+        [Test]
+        public void MakeDenseCircularLayout()
+        {
+            var random = new Random();
+            for (int i = 0; i < 200; i++)
+                layouter.PutNextRectangle(new SizeF(30, 30));
+            CheckCircularity(layouter.GetLayout());
+
         }
 
         [TearDown]
@@ -106,12 +118,24 @@ namespace CircularCloudVisualisationTest
             visualizer.VisualizeAndSave(layouter.GetLayout(), path, ImageFormat.Bmp);
         }
 
-        private void CheckIntersection(params RectangleF[] rectangles)
+        private void CheckIntersection(List<RectangleF> rectangles)
         {
-            for (var i = 0; i < rectangles.Length - 1; i++)
-                for (var j = i + 1; j < rectangles.Length; j++)
+            for (var i = 0; i < rectangles.Count - 1; i++)
+                for (var j = i + 1; j < rectangles.Count; j++)
                     rectangles[i].Should().Match(rect => !((RectangleF)rect).IntersectsWith(rectangles[j]));
         }
 
+        private void CheckCircularity(List<RectangleF> rectangles)
+        {
+            var farest = rectangles.OrderByDescending(rect => rect.Location.GetDistanceTo(center)).FirstOrDefault();
+            var circleRadius = farest.Location.GetDistanceTo(center);
+            var area = 0f;
+            foreach (var rectangle in rectangles)
+            {
+                area += rectangle.Width*rectangle.Height;
+            }
+            var circleArea = circleRadius*circleRadius*Math.PI;
+            area.Should().BeGreaterOrEqualTo((float) (DensityFactor*circleArea));
+        }
     }
 }

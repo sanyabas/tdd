@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 
 namespace TagsCloudVisualisation.Extensions
 {
@@ -26,6 +27,11 @@ namespace TagsCloudVisualisation.Extensions
         public static bool IsBehindBounds(this PointF point, SizeF bounds)
         {
             return point.X > bounds.Width || point.X < 0 || point.Y > bounds.Height || point.Y < 0;
+        }
+
+        public static double GetDistanceTo(this PointF point, PointF other)
+        {
+            return Math.Sqrt((point.X - other.X)*(point.X - other.X) + (point.Y - other.Y)*(point.Y - other.Y));
         }
     }
 }
