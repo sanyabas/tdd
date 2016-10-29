@@ -128,13 +128,9 @@ namespace CircularCloudVisualisationTest
         {
             var farest = rectangles.OrderByDescending(rect => rect.Location.GetDistanceTo(center)).FirstOrDefault();
             var circleRadius = farest.Location.GetDistanceTo(center);
-            var area = 0f;
-            foreach (var rectangle in rectangles)
-            {
-                area += rectangle.Width*rectangle.Height;
-            }
-            var circleArea = circleRadius*circleRadius*Math.PI;
-            area.Should().BeGreaterOrEqualTo((float) (DensityFactor*circleArea));
+            var area = rectangles.Sum(rectangle => rectangle.Width * rectangle.Height);
+            var circleArea = circleRadius * circleRadius * Math.PI;
+            area.Should().BeGreaterOrEqualTo((float)(DensityFactor * circleArea));
         }
     }
 }
