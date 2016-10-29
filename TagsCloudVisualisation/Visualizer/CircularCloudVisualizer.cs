@@ -4,9 +4,9 @@ using System.Drawing.Imaging;
 
 namespace TagsCloudVisualisation.Visualizer
 {
-    public class CircularCloudVisualizer : ITagsCloudVisualizer
+    public class CircularCloudVisualizer : ICloudVisualizer
     {
-        public Bitmap Visualise(List<RectangleF> layout)
+        public Bitmap Visualize(List<RectangleF> layout)
         {
             var bitmap = new Bitmap(800, 600);
             var graphics = Graphics.FromImage(bitmap);
@@ -17,7 +17,7 @@ namespace TagsCloudVisualisation.Visualizer
 
         public void VisualizeAndSave(List<RectangleF> layout, string fileFullName, ImageFormat format)
         {
-            using (var bitmap = Visualise(layout))
+            using (var bitmap = Visualize(layout))
                 bitmap.Save(fileFullName, format);
         }
     }

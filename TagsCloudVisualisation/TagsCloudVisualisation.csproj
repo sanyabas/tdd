@@ -59,8 +59,8 @@
   <ItemGroup>
     <Compile Include="Visualizer\CircularCloudVisualizer.cs" />
     <Compile Include="Layouter\CircularCloudLayouter.cs" />
-    <Compile Include="Layouter\ITagsCLoudLayouter.cs" />
-    <Compile Include="Visualizer\ITagsCloudVisualizer.cs" />
+    <Compile Include="Layouter\ICLoudLayouter.cs" />
+    <Compile Include="Visualizer\ICloudVisualizer.cs" />
     <Compile Include="Extensions\PointFExtensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

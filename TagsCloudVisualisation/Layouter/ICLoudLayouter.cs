@@ -3,8 +3,9 @@ using System.Drawing;
 
 namespace TagsCloudVisualisation.Layouter
 {
-    public interface ITagsCLoudLayouter
+    public interface ICLoudLayouter
     {
         List<RectangleF> GetLayout();
+        RectangleF PutNextRectangle(SizeF rectangleSize);
     }
 }

@@ -6,7 +6,7 @@ using TagsCloudVisualisation.Extensions;
 
 namespace TagsCloudVisualisation.Layouter
 {
-    public class CircularCloudLayouter : ITagsCLoudLayouter
+    public class CircularCloudLayouter : ICLoudLayouter
     {
         private readonly PointF center;
         private List<RectangleF> rectangles;
@@ -32,45 +32,58 @@ namespace TagsCloudVisualisation.Layouter
 
         public RectangleF PutNextRectangle(SizeF rectangleSize)
         {
-            PointF placingPoint;
+            RectangleF result;
             if (rectangles.Count == 0)
             {
                 var delta = new PointF(rectangleSize.Width / 2, rectangleSize.Height / 2);
-                placingPoint = center.Sub(delta);
+                var placingPoint = center.Sub(delta);
+                result=new RectangleF(placingPoint,rectangleSize);
             }
             else
             {
-                while (true)
-                {
-                    var temporaryPoint = GetNextSpiralPoint();
-                    var tempRectangle = new RectangleF(temporaryPoint, rectangleSize);
-                    var intersects = tempRectangle.IntersectsWith(rectangles);
-                    if (!intersects)
-                    {
-                        placingPoint = previousRadiusPoint = temporaryPoint;
-                        break;
-                    }
-                    previousRadiusPoint = temporaryPoint;
-                }
-                var tempResult = new RectangleF(placingPoint, rectangleSize);
-                tempResult = ShiftToCenter(tempResult);
-                if (tempResult.IsBehindBounds(bounds))
-                    tempResult = TryRotateInBounds(tempResult);
-                placingPoint = ShiftToCenter(tempResult).Location;
+                var placingPoint = FindSuitablePoint(rectangleSize);
+                previousRadiusPoint = placingPoint;
+                result = GetProcessedRectangle(placingPoint, rectangleSize);
             }
-            var resultRectangle = new RectangleF(placingPoint, rectangleSize);
-            rectangles.Add(resultRectangle);
-            return rectangles.Last();
+            rectangles.Add(result);
+            return result;
         }
 
-        private PointF GetNextSpiralPoint()
+        private RectangleF GetProcessedRectangle(PointF placingPoint, SizeF rectangleSize)
+        {
+            var tempResult = new RectangleF(placingPoint, rectangleSize);
+            tempResult = ShiftToCenter(tempResult);
+            if (tempResult.IsBehindBounds(bounds))
+                tempResult = TryRotateInBounds(tempResult);
+            var result = ShiftToCenter(tempResult);
+            return result;
+        }
+
+        private PointF FindSuitablePoint(SizeF rectangleSize)
+        {
+            PointF placingPoint;
+            while (true)
+            {
+                var temporaryPoint = GetNextSpiralPoint(previousRadiusPoint);
+                var tempRectangle = new RectangleF(temporaryPoint, rectangleSize);
+                var intersects = tempRectangle.IntersectsWith(rectangles);
+                placingPoint = previousRadiusPoint = temporaryPoint;
+                if (intersects)
+                    continue;
+                break;
+            }
+
+            return placingPoint;
+        }
+
+        private PointF GetNextSpiralPoint(PointF previousPoint)
         {
             if (rectangles.Count == 1)
             {
                 var previousRectangle = rectangles.Last();
                 return new PointF(previousRectangle.Right, previousRectangle.Top);
             }
-            var rotated = previousRadiusPoint.RotateAround(center, SpiralRotationAngle);
+            var rotated = previousPoint.RotateAround(center, SpiralRotationAngle);
             var relativeToCenter = rotated.Sub(center);
             var shift = new PointF(Math.Sign(relativeToCenter.X) * SpiralLengthDelta, Math.Sign(relativeToCenter.Y) * SpiralLengthDelta);
             var result = relativeToCenter.Add(shift).Add(center);

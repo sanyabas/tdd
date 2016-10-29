@@ -15,8 +15,8 @@ namespace CircularCloudVisualisationTest
     [TestFixture]
     public class CircularCloudLayouter_Should
     {
-        private CircularCloudLayouter layouter;
-        private CircularCloudVisualizer visualizer;
+        private ICLoudLayouter layouter;
+        private ICloudVisualizer visualizer;
         private Point center;
         private const double DensityFactor = 0.6;
 
@@ -103,8 +103,7 @@ namespace CircularCloudVisualisationTest
         [Test]
         public void MakeDenseCircularLayout()
         {
-            var random = new Random();
-            for (int i = 0; i < 200; i++)
+            for (var i = 0; i < 200; i++)
                 layouter.PutNextRectangle(new SizeF(30, 30));
             CheckCircularity(layouter.GetLayout());
 
