@@ -49,6 +49,11 @@ namespace TagsCloudVisualisation.Layouter
             return result;
         }
 
+        public PointF GetCenter()
+        {
+            return center;
+        }
+
         private PointF GetNextSpiralPoint(PointF previousPoint)
         {
             if (rectangles.Count == 1)

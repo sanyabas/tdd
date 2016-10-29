@@ -1,17 +1,29 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using TagsCloudVisualisation.Layouter;
 
 namespace TagsCloudVisualisation.Visualizer
 {
     public class CircularCloudVisualizer : ICloudVisualizer
     {
+        private static readonly Color VisualizationColor = Color.Black;
+        private static readonly Pen VisualizationPen = new Pen(Color.Brown, 3);
+        private readonly int bitmapWidth;
+        private readonly int bitmapHeight;
+
+        public CircularCloudVisualizer(ICLoudLayouter layouter)
+        {
+            bitmapWidth = (int)(layouter.GetCenter().X * 2);
+            bitmapHeight = (int)(layouter.GetCenter().Y * 2);
+        }
+
         public Bitmap Visualize(List<RectangleF> layout)
         {
-            var bitmap = new Bitmap(800, 600);
+            var bitmap = new Bitmap(bitmapWidth, bitmapHeight);
             var graphics = Graphics.FromImage(bitmap);
-            graphics.Clear(Color.Black);
-            graphics.DrawRectangles(new Pen(Color.Brown, 3), layout.ToArray());
+            graphics.Clear(VisualizationColor);
+            graphics.DrawRectangles(VisualizationPen, layout.ToArray());
             return bitmap;
         }
 

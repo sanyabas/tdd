@@ -10,10 +10,12 @@ namespace TagsCloudVisualisation
     {
         public static void Main(string[] args)
         {
-            var options = new Options();
-            if (!Parser.Default.ParseArguments(args, options)) return;
-            var layouter = new CircularCloudLayouter(new PointF(400, 300));
-            var visualizer = new CircularCloudVisualizer();
+            var options = new CommandLineOptions();
+            if (!Parser.Default.ParseArguments(args, options))
+                return;
+            var center = new PointF(options.CenterX, options.CenterY);
+            var layouter = new CircularCloudLayouter(center);
+            var visualizer = new CircularCloudVisualizer(layouter);
             var size = new SizeF(options.Width, options.Height);
             for (var i = 0; i < options.RectanglesNumber; i++)
                 layouter.PutNextRectangle(size);

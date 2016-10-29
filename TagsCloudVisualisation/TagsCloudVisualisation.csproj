@@ -61,7 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Options.cs" />
+    <Compile Include="CommandLineOptions.cs" />
     <Compile Include="Visualizer\CircularCloudVisualizer.cs" />
     <Compile Include="Layouter\CircularCloudLayouter.cs" />
     <Compile Include="Layouter\ICLoudLayouter.cs" />

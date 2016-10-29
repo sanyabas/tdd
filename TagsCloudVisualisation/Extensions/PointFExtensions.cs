@@ -30,7 +30,7 @@ namespace TagsCloudVisualisation.Extensions
 
         public static double GetDistanceTo(this PointF point, PointF other)
         {
-            return Math.Sqrt((point.X - other.X)*(point.X - other.X) + (point.Y - other.Y)*(point.Y - other.Y));
+            return Math.Sqrt((point.X - other.X) * (point.X - other.X) + (point.Y - other.Y) * (point.Y - other.Y));
         }
     }
 }

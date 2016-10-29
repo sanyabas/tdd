@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using FluentAssertions;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 using TagsCloudVisualisation.Extensions;
 using TagsCloudVisualisation.Layouter;
 using TagsCloudVisualisation.Visualizer;
@@ -25,7 +26,18 @@ namespace CircularCloudVisualisationTest
         {
             center = new Point(400, 300);
             layouter = new CircularCloudLayouter(center);
-            visualizer = new CircularCloudVisualizer();
+            visualizer = new CircularCloudVisualizer(layouter);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Passed)
+                return;
+            var name = TestContext.CurrentContext.Test.Name;
+            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, $"{name}.bmp");
+            visualizer.VisualizeAndSave(layouter.GetLayout(), path, ImageFormat.Bmp);
+            TestContext.WriteLine($"The image was saved to {path}");
         }
 
         [Test]
@@ -47,27 +59,27 @@ namespace CircularCloudVisualisationTest
         [Test]
         public void PlaceWithoutIntersection_TwoRectangles()
         {
-            var first = layouter.PutNextRectangle(new Size(73, 73));
-            var second = layouter.PutNextRectangle(new Size(73, 73));
-            first.Should().Match(rect => !((RectangleF)rect).IntersectsWith(second));
+            layouter.PutNextRectangle(new Size(73, 73));
+            layouter.PutNextRectangle(new Size(73, 73));
+            CheckIntersection(layouter.GetLayout());
         }
 
         [Test]
         public void PlaceWithoutIntersection_TwoDifferentRectangles()
         {
-            var first = layouter.PutNextRectangle(new Size(100, 80));
-            var second = layouter.PutNextRectangle(new Size(50, 30));
-            CheckIntersection(new List<RectangleF> { first, second });
+            layouter.PutNextRectangle(new Size(100, 80));
+            layouter.PutNextRectangle(new Size(50, 30));
+            CheckIntersection(layouter.GetLayout());
 
         }
 
         [Test]
         public void PlaceWithoutIntersection_ThreeRectangles()
         {
-            var first = layouter.PutNextRectangle(new SizeF(80, 50));
-            var second = layouter.PutNextRectangle(new SizeF(70, 70));
-            var third = layouter.PutNextRectangle(new SizeF(100, 30));
-            CheckIntersection(new List<RectangleF> { first, second, third });
+            layouter.PutNextRectangle(new SizeF(80, 50));
+            layouter.PutNextRectangle(new SizeF(70, 70));
+            layouter.PutNextRectangle(new SizeF(100, 30));
+            CheckIntersection(layouter.GetLayout());
         }
 
         [Test]
@@ -107,14 +119,6 @@ namespace CircularCloudVisualisationTest
                 layouter.PutNextRectangle(new SizeF(30, 30));
             CheckCircularity(layouter.GetLayout());
 
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            var name = TestContext.CurrentContext.Test.Name;
-            var path = Path.Combine(TestContext.CurrentContext.TestDirectory, $"{name}.bmp");
-            visualizer.VisualizeAndSave(layouter.GetLayout(), path, ImageFormat.Bmp);
         }
 
         private void CheckIntersection(List<RectangleF> rectangles)
