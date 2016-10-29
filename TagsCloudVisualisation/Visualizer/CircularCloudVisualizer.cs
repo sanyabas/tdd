@@ -14,8 +14,9 @@ namespace TagsCloudVisualisation.Visualizer
 
         public CircularCloudVisualizer(ICLoudLayouter layouter)
         {
-            bitmapWidth = (int)(layouter.GetCenter().X * 2);
-            bitmapHeight = (int)(layouter.GetCenter().Y * 2);
+            var center = layouter.GetCenter();
+            bitmapWidth = (int)(center.X * 2);
+            bitmapHeight = (int)(center.Y * 2);
         }
 
         public Bitmap Visualize(List<RectangleF> layout)
